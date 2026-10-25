@@ -6,7 +6,7 @@
 UEFI platform integration for the OnePlus Ace 2 / 11R, based on
 [`UniXNU/uefi-sheng`](https://github.com/UniXNU/uefi-sheng) and the
 Mu-Silicium tree. The companion device repository is
-[`UniXNU-udon`](../unixnu/UniXNU-udon).
+[`UniXNU-udon`](https://github.com/takasugl/UniXNU-udon).
 
 ## Current state
 
@@ -23,7 +23,7 @@ Mu-Silicium tree. The companion device repository is
 | Touch, USB host, sleep, audio | ❌ | Not available in this milestone |
 
 The XNU bring-up status is tracked in
-[`UniXNU-udon/docs/STATUS.md`](../unixnu/UniXNU-udon/docs/STATUS.md).
+[`UniXNU-udon/docs/STATUS.md`](https://github.com/takasugl/UniXNU-udon/blob/main/docs/STATUS.md).
 The UEFI milestone record is in [`docs/STATUS.md`](docs/STATUS.md).
 
 ## What is Udon-specific
