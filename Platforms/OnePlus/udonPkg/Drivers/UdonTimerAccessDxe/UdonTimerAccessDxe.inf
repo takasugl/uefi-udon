@@ -1,0 +1,21 @@
+[Defines]
+  INF_VERSION                    = 0x0001001B
+  BASE_NAME                      = UdonTimerAccessDxe
+  FILE_GUID                      = 7A5D2B41-6C1E-4F1B-9C31-5B0D9E2F3A17
+  MODULE_TYPE                    = DXE_DRIVER
+  VERSION_STRING                 = 1.0
+  ENTRY_POINT                    = UdonTimerAccessDxeEntry
+
+[Sources]
+  UdonTimerAccessDxe.c
+
+[Packages]
+  MdePkg/MdePkg.dec
+
+[LibraryClasses]
+  DebugLib
+  UefiBootServicesTableLib
+  UefiDriverEntryPoint
+
+[Depex]
+  TRUE

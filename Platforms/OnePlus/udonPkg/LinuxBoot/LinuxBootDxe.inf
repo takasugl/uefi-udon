@@ -1,0 +1,43 @@
+## @file
+#  udon Linux Boot Dxe — ReadyToBoot 诊断 + GPT 分区内核引导
+#
+#  SPDX-License-Identifier: BSD-2-Clause-Patent
+#
+##
+
+[Defines]
+  INF_VERSION                    = 0x00010005
+  BASE_NAME                      = LinuxBootDxe
+  FILE_GUID                      = F51189B8-1BD9-49BF-8871-7679296F9777
+  MODULE_TYPE                    = DXE_DRIVER
+  VERSION_STRING                 = 1.0
+  ENTRY_POINT                    = LinuxBootDxeEntryPoint
+
+[Sources]
+  LinuxBootDxe.c
+
+[Packages]
+  MdePkg/MdePkg.dec
+  MdeModulePkg/MdeModulePkg.dec
+
+[LibraryClasses]
+  UefiBootServicesTableLib
+  UefiDriverEntryPoint
+  UefiLib
+  BaseLib
+  BaseMemoryLib
+  DebugLib
+  MemoryAllocationLib
+  PrintLib
+
+[Guids]
+  gFdtTableGuid
+  gEfiEventReadyToBootGuid
+
+[Protocols]
+  gEfiBlockIoProtocolGuid
+  gEfiGraphicsOutputProtocolGuid
+  gEfiLoadedImageProtocolGuid
+
+[Depex]
+  TRUE
