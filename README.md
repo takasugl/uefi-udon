@@ -43,7 +43,9 @@ are not included here, and must come from the user's own device firmware dump.
 ## Build
 
 Host prerequisites and upstream integration are documented in
-[`Building.md`](Building.md). Initialize the submodules first:
+[`Building.md`](Building.md). The exact reproduction path, including the
+external PHK110 vendor input, is in [`docs/REPRODUCE.md`](docs/REPRODUCE.md).
+Initialize the submodules first:
 
 ```sh
 git submodule update --init --recursive
@@ -55,6 +57,12 @@ The built firmware is:
 
 ```text
 Build/udonPkg/DEBUG_CLANGPDB/FV/SILICIUM_UEFI.fd
+```
+
+Run the repository checks with:
+
+```sh
+python3 scripts/check-udon-platform.py
 ```
 
 The common UniXNU flow can also invoke this tree as the firmware repository:
