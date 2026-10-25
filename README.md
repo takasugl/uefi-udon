@@ -1,53 +1,93 @@
-# uefi-sheng
+# uefi-udon
 
-UEFI platform integration for the Xiaomi Pad 6S Pro (sheng, SM8550), using
-Project Silicium and Project Mu.
+> **Work in progress.** UEFI, UniXNU, DarwinBoot and the target XNU kernel run on
+> the OnePlus Ace 2 / 11R (PHK110, Udon, SM8475).
 
-The platform supplies memory reservations, board peripherals, display
-handoff, and the firmware volume. UniXNU supplies the boot application and
-DarwinBoot loader. UniXNU-sm8550-common supplies shared XNU platform support.
+UEFI platform integration for the OnePlus Ace 2 / 11R, based on
+[`UniXNU/uefi-sheng`](https://github.com/UniXNU/uefi-sheng) and the
+Mu-Silicium tree. The companion device repository is
+[`UniXNU-udon`](../unixnu/UniXNU-udon).
 
-- [Firmware integration](https://unixnu.com/porting/uefi-firmware)
-- [sheng device support](https://unixnu.com/devices/sheng)
-- [Build instructions](Building.md)
-- [Platform details](Platforms/Xiaomi/shengPkg/PORTING.md)
-- [Platform status](Status.md)
+## Current state
 
-## Payload firmware
+| Area | State | Notes |
+| --- | --- | --- |
+| Firmware build | ✅ | 4 MiB DEBUG FD at `0xA7100000` |
+| UEFI on PHK110 | ✅ | Booted through the `boot_b` AVB/OEM-footer graft path |
+| Display handoff | ✅ | `SimpleFbDxe`, 1240 × 2772 × 32-bit |
+| UniXNU menu | ✅ | Visible on hardware |
+| DarwinBoot and XNU handoff | ✅ | XNU and its diagnostics execute |
+| Payload volume | ✅ | FAT payload is loaded from `super` |
+| Udon persistent log export | ❌ | The UEFI app runs, but host-side USB mass-storage access is not qualified |
+| Linux `ReadyToBoot` boot | ⚠️ | Diagnostic driver is present; not the current boot path |
+| Touch, USB host, sleep, audio | ❌ | Not available in this milestone |
 
-Build through `./unixnu build firmware --uefi ../uefi-sheng` from UniXNU.
-The DSC and FDF include `UniXNURamDiskDxe`, DiskIoDxe and FAT support so the
-boot-image payload appears as a filesystem. `UniXNURamDiskDxe` is a shared
-module in UniXNU's `package/`, and uses the Mu-Silicium FDT handoff.
-`ShengBootMemoryDxe` supplies the board's memory expansion policy.
-See [required firmware integration](https://unixnu.com/porting/uefi-firmware#required-integration).
+The XNU bring-up status is tracked in
+[`UniXNU-udon/docs/STATUS.md`](../unixnu/UniXNU-udon/docs/STATUS.md).
+The UEFI milestone record is in [`docs/STATUS.md`](docs/STATUS.md).
+
+## What is Udon-specific
+
+| Path | Purpose |
+| --- | --- |
+| `Platforms/OnePlus/udonPkg/` | PHK110 platform, memory map, configuration map, firmware inputs, UniXNU integration |
+| `Platforms/OnePlus/udonPkg/Drivers/ShengBootMemoryDxe` | Publishes DRAM and the boot-image RAM disk from the FDT |
+| `Platforms/OnePlus/udonPkg/Applications/UdonLogExport` | Experimental read-only RAM export of the final 32 MiB of userdata |
+| `Platforms/OnePlus/udonPkg/LinuxBoot` | Experimental `ReadyToBoot` GPT kernel launcher |
+| `Resources/Configs/udon.toml` | FD base/size and Android boot-image layout |
+
+The package uses vendor modules from `Binaries/udon/` in the
+`Project-Silicium/Device-Binaries` submodule. Those binaries are proprietary,
+are not included here, and must come from the user's own device firmware dump.
+
+## Build
+
+Host prerequisites and upstream integration are documented in
+[`Building.md`](Building.md). Initialize the submodules first:
+
+```sh
+git submodule update --init --recursive
+export UNIXNU_ROOT=/path/to/UniXNU
+./scripts/build-udon-firmware.sh
+```
+
+The built firmware is:
+
+```text
+Build/udonPkg/DEBUG_CLANGPDB/FV/SILICIUM_UEFI.fd
+```
+
+The common UniXNU flow can also invoke this tree as the firmware repository:
+
+```sh
+./unixnu build package firmware --uefi /path/to/uefi-udon \
+  -D /path/to/UniXNU-udon
+```
+
+`FD_BASE`, `FD_SIZE` and `FD_BLOCKS` must stay consistent with
+`Resources/Configs/udon.toml` and `udonPkg/Library/MemoryMapLib`.
+
+## Flashing notes
+
+- Android slot `b` was used during bring-up.
+- The stock PHK110 ABL requires the boot image's OEM vbmeta/footer graft.
+- `boot_b`, `vendor_boot_b`, `dtbo_b` and `vbmeta_b` should be backed up first.
+- The payload lives in the FAT volume in `super` for the current XNU path.
+
+## Known cleanup items
+
+- The inherited DSC still carries Realme SMBIOS strings from the `senna_bc`
+  template.
+- `LinuxBootDxe` and `UdonLogExport` are experiments, not supported boot paths.
+- The vendor binary directory is not reproducible from public sources alone.
 
 ## Credits
 
-[Microsoft](https://github.com/microsoft/) for their [Project Mu](https://microsoft.github.io/mu/) which Powers this Project. <br>
-[WOA-Project](https://github.com/WOA-Project/) for their [mu_andromeda_platforms](https://github.com/WOA-Project/mu_andromeda_platforms/) which is used as Base for this Project. <br>
-[Project Aloha](https://github.com/Project-Aloha/) for their [mu_aloha_platforms](https://github.com/Project-Aloha/mu_aloha_platforms/) which is used as Reference for some SoCs. <br>
-[Open Surface RT](https://openrt.gitbook.io/open-surfacert/) for their Help on Tegra Related Stuff.
-
-[sonic011gamer](https://github.com/sonic011gamer/) and [halal-beef](https://github.com/halal-beef/) for their Amazing Work on Exynos Related Stuff.
+Project Mu, Project Silicium, WOA-Project, Project Aloha and the UniXNU
+contributors provide the base firmware, platform libraries and documentation.
 
 ## License
 
-All code except drivers in `GPLDrivers` & `GPLApplications` & `GPLLibrary` directories are licensed under BSD-2-Clause. <br />
-GPL Drivers are licensed under `GPLv2` or later license.
-
-## Device porting record
-
-The firmware section of [sheng's porting record](https://unixnu.com/devices/sheng#firmware)
-records handoff inputs, development findings, evidence and completion criteria.
-Update `UniXNU-sheng/porting.toml` when firmware work changes those inputs or
-results. Maintainers and agents use the [same workflow](https://unixnu.com/porting/records).
-
-## Local build inputs
-
-Save device paths and boot arguments in `unixnu.local.toml` in the UniXNU
-checkout. See the [configuration reference](https://unixnu.com/reference/configuration#local-build-inputs).
-Then use `./unixnu kernel`, `./unixnu firmware`, `./unixnu payload`, and
-`./unixnu bootimg`. Argument changes require rebuilding the payload and boot
-image. See [boot arguments](https://unixnu.com/xnu/boot-arguments#apply-arguments)
-and [green-bar diagnosis](https://unixnu.com/guide/debugging#green-bar).
+All code except `GPLDrivers`, `GPLApplications` and `GPLLibrary` is licensed
+under BSD-2-Clause. GPL components are licensed under GPLv2 or later. See
+[`LICENSE`](LICENSE).
